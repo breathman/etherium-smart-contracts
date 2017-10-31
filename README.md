@@ -1,25 +1,23 @@
-##Запуск под Windows
+## Запуск под Windows
 
 Для запуска локальной p2p сети необходимо:
 
 1. Установить Geth
 2. Установить Mist
 
-#####Запускаем Geth.
-
+##### Запускаем Geth.
 > geth  --dev --rpc --rpcapi \.\pipe\geth.ipc console
 
 
-#####Запускаем Mist.
-```
-C:\Program Files\Mist\Mist.exe localhost:8545
-```
+##### Запускаем Mist.
+> C:\Program Files\Mist\Mist.exe localhost:8545
 
-##Простейший смарт-контракт
+
+## Простейший смарт-контракт
 
 Код смарт-контракта оборачивается в блок {}. 
 
-```
+```javascript
 contract SimpleToken {}
 ```
 
