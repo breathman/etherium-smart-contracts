@@ -41,6 +41,7 @@ function SimpleContract(uint256 initialSupply, string tokenName, string tokenSym
 }
 ```
 В нашем случае в интерфейсе кошелька при деплое контракта будет предложено задать значения основных параметров. Все выпущенные токены мы передаем создателю контракта.
+
 Центральной функцией в смарт-контракте является функция перевода токенов с одного адреса на другой.
 ```javascript
 event Transfer(address indexed from, address indexed to, uint256 value);
