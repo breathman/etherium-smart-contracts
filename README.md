@@ -6,9 +6,9 @@
 2. Установить Mist
 
 #####Запускаем Geth.
-````
-geth  --dev --rpc --rpcapi \.\pipe\geth.ipc console
-````
+
+> geth  --dev --rpc --rpcapi \.\pipe\geth.ipc console
+
 
 #####Запускаем Mist.
 ```
