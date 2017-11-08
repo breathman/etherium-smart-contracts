@@ -1,6 +1,23 @@
 pragma solidity ^0.4.15;
 
-contract SimpleContract {
+contract owned {
+    address  public owner;
+
+    function owned() {
+        owner = msg.sender;
+    }
+
+    modifier onlyOwner {
+        require(msg.sender == owner);
+        _;
+    }
+
+    function transferOwnership(address newOwner) onlyOwner {
+        owner = newOwner;
+    }
+}
+
+contract SimpleContract is owned {
 
     string public name;
     string public symbol;
