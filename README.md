@@ -113,7 +113,76 @@ function transfer(address _to, uint256 _value) {
 Возможно возникновение ситуации, когда необходимо будет изменить количество токенов, находящихся в обращении.
 Когда токен представляет собой какие-либо активы вне блокчейна (например золото или реальная валюта) и мы хотим, чтобы виртальное количество токенов отражало реальную ситуацию.
 
-Сперва вводим переменную, отражающую количество выпущенных токенов **totalSupply**.
-```javascript
+Сперва вводим переменную, отражающую количество выпущенных токенов **totalSupply**. В конструктор контракта добавляем возможность указать адрес администратора контракта.
+Если адрес администратора не инициализирован, администратором является владелец контракта. К функции выпуска токенов **mintToken** мы применяем модификатор **onlyOnwer**,
+тем самым даем права на эмисиию токенов только владельцу контракта. 
 
+Эмиссия токенов осуществляется перемещением токенов с нулевого адреса (0х0) на адрес владельца контракта, а оттуда на адрес, указанный во входящем параметре **target**. 
+Теоритически можно перемещать токены с нулевого адреса на указанный сразу, но для наглядности и для лучше использовать
+вариант с эмиссией через адрес владельца. 
+
+```javascript
+    //...
+    uint256 public totalSupply;
+
+    function SimpleContract(uint256 initialSupply, string tokenName, string tokenSymbol, uint8 decimalUnits, address centralMinter) {
+        //...
+        totalSupply = initialSupply;
+        if (centralMinter != 0) owner = centralMinter;
+    }
+    
+    //...
+    function mintToken(address target, uint256 mintedAmount) onlyOwner {
+        balanceOf[target] += mintedAmount;
+        totalSupply += mintedAmount;
+        Transfer(0, owner, mintedAmount);
+        Transfer(owner, target, mintedAmount);
+    }
+```
+## Блокировка доступа
+
+В зависимости от ситуации может возникнуть потребность в запрете каким-либо адресам использовать ваши токены. Для этого необходимо добавить в контракт возможность для владельца
+блокировать и разблокировать доступ к функционалу контракта для тех или иных адресов.
+
+```javascript
+    //...
+    mapping (address => bool) public frozenAccount;
+    event FrozenFunds(address indexed target, bool frozen);
+    
+    function freezeAccount(address _target, bool _freeze) onlyOwner {
+        require(_target != owner);
+        frozenAccount[_target] = _freeze;
+        FrozenFunds(_target, _freeze);
+    }
+```
+
+В коде выше мы объявляем инексированный массив **frozenAccount** для хранения списка заблокированных адресов и событие блокировки **FrozenFunds**. Функция блокировки аккаунта доступна 
+только для владельца и принимает на вход два параметра - адрес блокируемого параметра, и логическое значение (флаг блокировки). Но сама по себе блокировка пока что не влияет на поведение контракта. 
+Мы будем использовать массив заблокированных аккаунтов для недопущения выполнения операций контракта от их имени. Пример ниже.
+
+```javascript
+    function transfer(address _to, uint256 _value) {
+        require(!frozenAccount[msg.sender]);
+        //...
+    }
+```
+
+В данном случае любой заблокированный аккаунт продолжит хранить свои средтсва, но не сможет ими воспользоваться. По умолчанию все адреса разблокированы, но в зависимости от ситуации
+данное поведение можно изменить, и давать доступ на использование токенов вручную (whitelist). Для этого достаточно переименовать массив адресов и изменить поведение функции проверки доступа:
+
+```javascript
+    //...
+    mapping (address => bool) public approvedAccount;
+    event ApprovedFunds(address indexed target, bool frozen);
+    
+    function freezeAccount(address _target, bool _freeze) onlyOwner {
+        require(_target != owner);
+        approvedAccount[_target] = _freeze;
+        ApprovedFunds(_target, _freeze);
+    }
+    
+        function transfer(address _to, uint256 _value) {
+            require(approvedAccount[msg.sender]);
+            //...
+        }
 ```
